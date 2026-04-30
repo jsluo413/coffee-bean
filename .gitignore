@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.env
+.ipynb_checkpoints/
+
+# Tooling
+.streamlit/secrets.toml
+.DS_Store
+.vscode/
+.idea/
+
+# OS / IDE noise
+Thumbs.db
+desktop.ini
+~$*           # MS Office lock files
+
+# Tool-specific local config
+.claude/
+
+# Large local exports (PNGs are committed for GitHub Pages fallback;
+# leave them in unless they balloon)
