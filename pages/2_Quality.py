@@ -58,15 +58,26 @@ if "<1000m" in means.index and ">2000m" in means.index:
         f"**{means['>2000m']:.2f}** — a ~{means['>2000m'] - means['<1000m']:+.2f} point gap."
     )
 
-# --- Parallel coordinates ---------------------------------------------------
+# --- Sensory dimension correlations -----------------------------------------
 st.subheader("Which sensory dimensions track total score?")
-st.plotly_chart(F.fig_parallel_coordinates(df), width="stretch")
+st.plotly_chart(F.fig_cupping_correlations(df), width="stretch")
 st.caption(
-    "Drag any axis to filter. The dimensions whose lines fan out the most "
-    "(*flavor*, *aftertaste*, *balance*) carry the most signal; *uniformity*, "
-    "*clean cup*, and *sweetness* are nearly always 10/10 for the lots that "
-    "make it into the database, so they discriminate poorly."
+    "Each bar is the Pearson correlation between one cupping dimension and "
+    "the overall rating. *Flavor*, *aftertaste*, and *balance* track the "
+    "total most tightly (r ≈ 0.76–0.83). *Sweetness* and *uniformity* lag at "
+    "the bottom (r ≈ 0.40–0.52) — not because they don't matter, but because "
+    "almost every certified lot scores 10/10 on them, leaving very little "
+    "variance to correlate."
 )
+
+with st.expander("Drill-down: see every lot's full sensory profile"):
+    st.plotly_chart(F.fig_parallel_coordinates(df), width="stretch")
+    st.caption(
+        "Each line is one cupped lot, crossing all ten dimensions left-to-right; "
+        "color is the total cup points. Drag a range on any axis to filter. "
+        "The three near-flat axes on the right are the stuck-at-10 dimensions "
+        "called out above."
+    )
 
 # --- Regression -------------------------------------------------------------
 st.subheader("How big is altitude's effect, controlling for everything else?")

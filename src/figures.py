@@ -156,6 +156,52 @@ def fig_altitude_box(cqi: pd.DataFrame) -> go.Figure:
     return fig
 
 
+def fig_cupping_correlations(cqi: pd.DataFrame) -> go.Figure:
+    """Bar of Pearson correlation between each cupping dim and total_cup_points.
+
+    Reads as: dimensions whose lots' scores move with the overall rating sit
+    near the top; dimensions where almost every lot scores 10/10 (uniformity,
+    clean cup, sweetness for certification-track samples) sit near zero because
+    they have no variance to correlate.
+    """
+    df = cqi.dropna(subset=CUPPING_DIMS + ["total_cup_points"]).copy()
+    rows = []
+    for dim in CUPPING_DIMS:
+        s = pd.to_numeric(df[dim], errors="coerce")
+        rows.append({
+            "dim": dim.replace("_", " ").title(),
+            "r": s.corr(df["total_cup_points"]),
+            "std": float(s.std()),
+        })
+    out = pd.DataFrame(rows).sort_values("r", ascending=True)
+    bar_colors = [ACCENT if r >= 0.75 else ACCENT_LIGHT if r >= 0.6 else "#BBBBBB"
+                  for r in out["r"]]
+    fig = go.Figure()
+    fig.add_bar(
+        x=out["r"], y=out["dim"], orientation="h",
+        marker_color=bar_colors,
+        customdata=out["std"],
+        hovertemplate="%{y}<br>r = %{x:.2f}<br>std-dev = %{customdata:.2f}<extra></extra>",
+        text=[f"{r:+.2f}" for r in out["r"]],
+        textposition="outside",
+        cliponaxis=False,
+    )
+    fig.update_layout(
+        template=TEMPLATE,
+        title="<b>Flavor, aftertaste, balance track the overall score most "
+              "tightly; sweetness and uniformity lag</b>"
+              "<br><sup>Pearson correlation between each cupping dimension and "
+              f"total cup points (n={len(df)} lots)</sup>",
+        xaxis_title="Correlation with total cup points",
+        yaxis_title="",
+        xaxis=dict(range=[0, 1.05], zeroline=True, zerolinecolor="#888"),
+        margin=dict(l=130, r=50, t=80, b=40),
+        showlegend=False,
+        height=380,
+    )
+    return fig
+
+
 def fig_parallel_coordinates(cqi: pd.DataFrame, max_rows: int = 800) -> go.Figure:
     df = cqi.dropna(subset=CUPPING_DIMS + ["total_cup_points"]).copy()
     if len(df) > max_rows:
