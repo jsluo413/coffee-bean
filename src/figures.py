@@ -26,7 +26,7 @@ ACCENT_LIGHT = "#C8A27E"
 
 
 # ============================================================================
-# H1 — Geography & yield
+# Geography & yield
 # ============================================================================
 
 def fig_production_choropleth(fao: pd.DataFrame, year: int) -> go.Figure:
@@ -129,7 +129,7 @@ def fig_belt_vs_margin_box(fao: pd.DataFrame, year_range=(2010, 2022)) -> go.Fig
 
 
 # ============================================================================
-# H2 — Quality drivers
+# Quality drivers
 # ============================================================================
 
 CUPPING_DIMS = ["aroma", "flavor", "aftertaste", "acidity", "body",
@@ -220,7 +220,7 @@ def fig_quality_regression(cqi: pd.DataFrame) -> go.Figure:
 
 
 # ============================================================================
-# H3 — Price vs rating
+# Price vs rating
 # ============================================================================
 
 def fig_price_rating(reviews: pd.DataFrame) -> go.Figure:
@@ -286,7 +286,7 @@ def fig_roast_by_year(reviews: pd.DataFrame) -> go.Figure:
 
 
 # ============================================================================
-# H4 — NLP flavor clusters
+# NLP flavor clusters
 # ============================================================================
 
 def fig_flavor_wordcloud(reviews: pd.DataFrame, rating_tier: str = "high"):

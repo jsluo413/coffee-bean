@@ -1,4 +1,4 @@
-"""H4 — NLP flavor clusters."""
+"""NLP flavor clusters."""
 from pathlib import Path
 import pandas as pd
 import streamlit as st

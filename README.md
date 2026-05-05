@@ -61,10 +61,10 @@ PNGs.
 coffee-bean/
 ├── streamlit_app.py          # Streamlit entry point (home page)
 ├── pages/                    # one file per hypothesis
-│   ├── 1_H1_Geography.py
-│   ├── 2_H2_Quality.py
-│   ├── 3_H3_Price.py
-│   ├── 4_H4_Flavor.py
+│   ├── 1_Geography.py
+│   ├── 2_Quality.py
+│   ├── 3_Price.py
+│   ├── 4_Flavor.py
 │   ├── 5_Synthesis.py
 │   └── 6_About.py
 ├── src/

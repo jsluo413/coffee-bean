@@ -1,4 +1,4 @@
-"""H2 — Quality drivers."""
+"""Quality drivers."""
 from pathlib import Path
 import pandas as pd
 import streamlit as st
