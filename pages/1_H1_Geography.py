@@ -16,7 +16,7 @@ def _load():
 
 fao = _load()
 
-st.title("H1 — Geography & Yield")
+st.title("Geography & Yield")
 st.markdown(
     """
 > **Hypothesis:** Countries near the equatorial *coffee belt* (23.5°N–23.5°S)
