@@ -16,7 +16,7 @@ def _load():
 
 cqi = _load()
 
-st.title("H2 — Quality Drivers")
+st.title("Quality Drivers")
 st.markdown(
     """
 > **Hypothesis:** Altitude is the strongest single predictor of total cup points
@@ -32,7 +32,7 @@ much more than any one geographic variable.
 
 # --- Filters ----------------------------------------------------------------
 with st.sidebar:
-    st.header("H2 filters")
+    st.header("filters")
     countries = ["All"] + sorted(cqi["country"].dropna().unique().tolist())
     pick = st.multiselect("Country", countries, default=["All"])
     proc_opts = ["All"] + sorted(cqi["processing"].dropna().unique().tolist())

@@ -20,30 +20,6 @@ Python (pandas, NumPy, scikit-learn, statsmodels, NLTK), Plotly for interactive
 charts, WordCloud + matplotlib for the word cloud, networkx for the descriptor
 network, Streamlit as the dashboard framework.
 
-### Methodology highlights
-
-- Country-string normalization across the three datasets (FAO uses ISO names,
-  CQI is mostly tidy, coffeereview origin fields are free-text — we use a
-  keyword-matching approach across `origin_2 → origin_1 → name → desc_2`).
-- Altitude bins: <1000 m, 1000–1500 m, 1500–2000 m, >2000 m.
-- Quality regression: standardized OLS on numeric features +
-  one-hot-encoded processing method.
-- Flavor clusters: TF-IDF (min_df=10) + KMeans on review descriptions, with a
-  custom stopword list.
-
-### Limitations (what the data *cannot* tell us)
-
-- **Survivorship bias in CQI.** The cupping database is samples *submitted* by
-  exporters seeking certification — not a random sample of world coffee.
-- **Specialty bias in reviews.** coffeereview.com is curated; ratings cluster
-  in 88–96. Findings about the price–rating curve generalize within specialty,
-  not to commodity coffee.
-- **Country = country-of-origin, not country-of-roaster.** The "where it was
-  graded" is sometimes ambiguous (e.g., U.S. roasters cupping Ethiopian beans).
-- **Yield numbers come from FAO** and reflect green-bean output divided by
-  area harvested; processing efficiency, drought, and pests can move it
-  year-to-year independent of agronomy.
-
 ### Reproducibility
 
 ```bash

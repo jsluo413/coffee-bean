@@ -17,7 +17,7 @@ def _load():
 
 rev = _load()
 
-st.title("H3 — Price vs. Rating")
+st.title("Price vs. Rating")
 st.markdown(
     """
 > **Hypothesis:** The price–rating relationship is non-linear; spending above

@@ -63,10 +63,10 @@ st.markdown(
 
 | Page | Question |
 |---|---|
-| **H1 — Geography & Yield** | Does the equatorial coffee belt actually deliver higher yields? |
-| **H2 — Quality Drivers** | Is altitude really the strongest predictor of cupping score? |
-| **H3 — Price vs. Rating** | At what price point do specialty buyers stop getting more quality? |
-| **H4 — Flavor Clusters** | Do flavor descriptors line up with origin geography? |
+| **Geography & Yield** | Does the equatorial coffee belt actually deliver higher yields? |
+| **Quality Drivers** | Is altitude really the strongest predictor of cupping score? |
+| **Price vs. Rating** | At what price point do specialty buyers stop getting more quality? |
+| **Flavor Clusters** | Do flavor descriptors line up with origin geography? |
 | **Synthesis** | Do high-volume producers also make high-quality coffee? |
 | **About** | Data sources, methodology, limitations. |
 

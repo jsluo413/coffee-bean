@@ -20,5 +20,7 @@ desktop.ini
 # Tool-specific local config
 .claude/
 
+# docs
+docs/
 # Large local exports (PNGs are committed for GitHub Pages fallback;
 # leave them in unless they balloon)
