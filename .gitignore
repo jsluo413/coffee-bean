@@ -20,6 +20,14 @@ desktop.ini
 # Tool-specific local config
 .claude/
 
+# Local build / orchestration scripts (kept out of the published repo;
+# the deliverables — Streamlit app, write-up, deck — are checked in directly).
+src/build_pptx.py
+src/compute_findings.py
+src/export_figures.py
+src/embed_figures.py
+docs/findings.json
+docs/presentation.pptx
 # docs
 docs/
 # Large local exports (PNGs are committed for GitHub Pages fallback;
