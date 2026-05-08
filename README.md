@@ -5,8 +5,7 @@ Final project for Data-visualization course.
 **Deliverables**
 
 - `streamlit_app.py` + `pages/` — interactive dashboard (Streamlit)
-- `docs/writeup.md` — analytical write-up
-- `docs/presentation.pptx` — 10-minute slide deck
+- presentation 
 - `data/processed/*.parquet` — cleaned, joined data
 
 ## Hypotheses + headline findings
@@ -18,14 +17,12 @@ Final project for Data-visualization course.
 | H3 | Diminishing returns above ~$12/100g | Strongly supported |
 | H4 | Flavor clusters track origin | Supported with nuance |
 
-See `docs/writeup.md` for the full discussion.
 
 ## Data sources
 
 - FAO via Our World in Data — <https://ourworldindata.org/grapher/coffee-bean-production>
 - Coffee Quality Institute (Kaggle)
 - coffeereview.com (Kaggle)
-
 
 ## Quick start
 
@@ -55,8 +52,3 @@ Open <http://localhost:8501>.
 
 The cleaned parquet files in `data/processed/` are checked in so the app
 boots without re-running the prep pipeline on the cloud worker.
-
-## License
-
-Code: MIT. Data: see each source's terms (FAO/OWID is CC-BY; the Kaggle
-datasets are MIT-equivalent).
