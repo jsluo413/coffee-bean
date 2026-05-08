@@ -29,6 +29,109 @@ ACCENT_LIGHT = "#C8A27E"
 # Geography & yield
 # ============================================================================
 
+# Coffee-themed map styling, used by both production maps.
+MAP_LAND = "#F4EFE6"          # warm cream for non-coffee land
+MAP_OCEAN = "#EAF1F5"         # soft, low-saturation blue
+MAP_COASTLINE = "#B5AFA4"
+MAP_COUNTRY_LINE = "#FFFFFF"  # white country borders pop against the cream
+COFFEE_SCALE = "YlOrBr"       # ties to the coffee/bean color story
+
+
+def _add_coffee_belt(fig: go.Figure) -> None:
+    """Overlay the coffee belt (Tropic of Cancer to Tropic of Capricorn).
+
+    Uses dashed lines at the two tropics plus a subtle equator. Latitude
+    labels are anchored well inside the map bounds so they don't clip on
+    the natural-earth projection edges. We deliberately do NOT use
+    fill="toself" here — the polygon wraps around the projection and ends
+    up shading the whole map.
+    """
+    # Densify line so it follows the natural-earth curvature smoothly.
+    lons = list(range(-175, 180, 5))
+    # Tropic of Cancer.
+    fig.add_trace(go.Scattergeo(
+        lon=lons, lat=[23.5] * len(lons),
+        mode="lines",
+        line=dict(color="rgba(111, 78, 55, 0.7)", width=1.4, dash="dash"),
+        hoverinfo="skip",
+        name="Coffee belt (23.5°N–23.5°S)",
+        legendgroup="belt", showlegend=True,
+    ))
+    # Tropic of Capricorn.
+    fig.add_trace(go.Scattergeo(
+        lon=lons, lat=[-23.5] * len(lons),
+        mode="lines",
+        line=dict(color="rgba(111, 78, 55, 0.7)", width=1.4, dash="dash"),
+        hoverinfo="skip",
+        legendgroup="belt", showlegend=False,
+    ))
+    # Equator (subtle).
+    fig.add_trace(go.Scattergeo(
+        lon=lons, lat=[0] * len(lons),
+        mode="lines",
+        line=dict(color="rgba(0, 0, 0, 0.18)", width=0.8, dash="dot"),
+        hoverinfo="skip",
+        showlegend=False,
+    ))
+    # Latitude labels — placed inside the map (lon=-160..170) to avoid clipping.
+    fig.add_trace(go.Scattergeo(
+        lon=[-150, -150, -150],
+        lat=[23.5, -23.5, 0],
+        mode="text",
+        text=["23.5°N — Tropic of Cancer",
+              "23.5°S — Tropic of Capricorn",
+              "Equator"],
+        textposition="top right",
+        textfont=dict(size=10, color="rgba(111, 78, 55, 0.9)"),
+        hoverinfo="skip",
+        showlegend=False,
+    ))
+
+
+def _add_top_producer_labels(fig: go.Figure, fao: pd.DataFrame, year: int, n: int = 8) -> None:
+    """Mark top-N producing countries with a dot + name on the map."""
+    df = fao[
+        (fao["year"] == year)
+        & (~fao["is_aggregate"])
+        & fao["production_tonnes"].notna()
+        & fao["lat"].notna() & fao["lon"].notna()
+    ].copy()
+    top = df.nlargest(n, "production_tonnes").copy()
+    top["production_kt"] = top["production_tonnes"] / 1_000
+
+    fig.add_trace(go.Scattergeo(
+        lon=top["lon"], lat=top["lat"],
+        mode="markers+text",
+        text=top["country"],
+        textposition="top center",
+        textfont=dict(size=11, color="#222", family="Arial Black, Arial, sans-serif"),
+        marker=dict(
+            size=8, color="#FFFFFF",
+            line=dict(color=ACCENT, width=2),
+            symbol="circle",
+        ),
+        customdata=top[["production_kt"]].values,
+        hovertemplate="<b>%{text}</b><br>Production: %{customdata[0]:.0f} kt<extra></extra>",
+        name="Top producers",
+        showlegend=True,
+    ))
+
+
+def _style_geo(fig: go.Figure) -> None:
+    """Apply consistent, low-chartjunk geo styling to a choropleth."""
+    fig.update_geos(
+        projection_type="natural earth",
+        showframe=False,
+        showcoastlines=True, coastlinecolor=MAP_COASTLINE, coastlinewidth=0.5,
+        showland=True, landcolor=MAP_LAND,
+        showocean=True, oceancolor=MAP_OCEAN,
+        showcountries=True, countrycolor=MAP_COUNTRY_LINE, countrywidth=0.4,
+        showlakes=True, lakecolor=MAP_OCEAN,
+        bgcolor="rgba(0,0,0,0)",
+        lataxis_range=[-58, 75],   # crop empty polar caps
+    )
+
+
 def fig_production_choropleth(fao: pd.DataFrame, year: int) -> go.Figure:
     df = fao[(fao["year"] == year) & (~fao["is_aggregate"]) & fao["production_tonnes"].notna()].copy()
     df["production_kt"] = df["production_tonnes"] / 1_000
@@ -36,17 +139,31 @@ def fig_production_choropleth(fao: pd.DataFrame, year: int) -> go.Figure:
         df, locations="iso3", color="production_kt",
         hover_name="country",
         hover_data={"production_kt": ":.1f", "iso3": False},
-        color_continuous_scale=SEQ,
+        color_continuous_scale=COFFEE_SCALE,
         range_color=(0, fao["production_tonnes"].quantile(0.99) / 1000),
         labels={"production_kt": "Production (kt)"},
     )
+    fig.update_traces(marker_line_color=MAP_COUNTRY_LINE, marker_line_width=0.4,
+                      selector=dict(type="choropleth"))
+    _add_coffee_belt(fig)
+    _add_top_producer_labels(fig, fao, year, n=8)
+    _style_geo(fig)
     fig.update_layout(
         template=TEMPLATE,
-        title=f"<b>Coffee production concentrates in tropical Latin America & Africa</b><br><sup>{year} green-coffee output, kilotonnes</sup>",
+        title=f"<b>Coffee production hugs the equatorial coffee belt</b><br><sup>{year} green-coffee output (kilotonnes); dashed lines mark 23.5°N–23.5°S</sup>",
         margin=dict(l=10, r=10, t=70, b=10),
-        coloraxis_colorbar=dict(title="kt"),
+        coloraxis_colorbar=dict(
+            title="Production<br>(kt)",
+            thickness=12, len=0.6, x=0.99, xanchor="right",
+            outlinewidth=0,
+        ),
+        legend=dict(
+            x=0.01, y=0.02, xanchor="left", yanchor="bottom",
+            bgcolor="rgba(255,255,255,0.7)",
+            bordercolor="rgba(0,0,0,0.1)", borderwidth=1,
+        ),
+        paper_bgcolor="white",
     )
-    fig.update_geos(showframe=False, showcountries=True, projection_type="natural earth")
     return fig
 
 
@@ -57,16 +174,30 @@ def fig_production_animated(fao: pd.DataFrame) -> go.Figure:
     fig = px.choropleth(
         df, locations="iso3", color="production_kt",
         hover_name="country", animation_frame="year",
-        color_continuous_scale=SEQ,
+        color_continuous_scale=COFFEE_SCALE,
         range_color=(0, df["production_kt"].quantile(0.99)),
         labels={"production_kt": "Production (kt)"},
     )
+    fig.update_traces(marker_line_color=MAP_COUNTRY_LINE, marker_line_width=0.4,
+                      selector=dict(type="choropleth"))
+    _add_coffee_belt(fig)
+    _style_geo(fig)
     fig.update_layout(
         template=TEMPLATE,
-        title="<b>Six decades of coffee production, 1970–2024</b><br><sup>Brazil, Vietnam, and Colombia have driven nearly all growth</sup>",
+        title="<b>Six decades of coffee production, 1970–2024</b><br><sup>Brazil, Vietnam, and Colombia have driven nearly all growth — output stays inside the coffee belt</sup>",
         margin=dict(l=10, r=10, t=70, b=10),
+        coloraxis_colorbar=dict(
+            title="Production<br>(kt)",
+            thickness=12, len=0.6, x=0.99, xanchor="right",
+            outlinewidth=0,
+        ),
+        legend=dict(
+            x=0.01, y=0.02, xanchor="left", yanchor="bottom",
+            bgcolor="rgba(255,255,255,0.7)",
+            bordercolor="rgba(0,0,0,0.1)", borderwidth=1,
+        ),
+        paper_bgcolor="white",
     )
-    fig.update_geos(showframe=False, showcountries=True, projection_type="natural earth")
     return fig
 
 
@@ -93,11 +224,29 @@ def fig_yield_vs_latitude(fao: pd.DataFrame, year_range=(2010, 2022)) -> go.Figu
         labels={"lat": "Latitude (°)", "yield_t_per_ha": "Yield (t/ha)"},
         size_max=40,
     )
-    # Trend line (LOWESS-ish) using simple polynomial fit on |lat|.
     fig.add_vline(x=23.5, line_dash="dot", line_color="grey")
     fig.add_vline(x=-23.5, line_dash="dot", line_color="grey")
     fig.add_annotation(x=0, y=agg["yield_t_per_ha"].max() * 0.95,
                        text="◄ Equator ►", showarrow=False, font=dict(color="grey"))
+
+    # Label the storyline countries: the biggest producers and the
+    # highest-yield outliers (which are mostly outside the belt — the
+    # whole point of the chart).
+    top_vol = agg.nlargest(8, "production_tonnes")["country"]
+    top_yld = agg.nlargest(5, "yield_t_per_ha")["country"]
+    label_set = set(top_vol) | set(top_yld) | {
+        "Brazil", "Vietnam", "Colombia", "Indonesia", "Ethiopia"
+    }
+    labeled = agg[agg["country"].isin(label_set)]
+    fig.add_trace(go.Scatter(
+        x=labeled["lat"], y=labeled["yield_t_per_ha"],
+        mode="text",
+        text=labeled["country"],
+        textposition="top center",
+        textfont=dict(size=11, color="#222", family="Arial Black, Arial, sans-serif"),
+        hoverinfo="skip", showlegend=False, cliponaxis=False,
+    ))
+
     fig.update_layout(
         template=TEMPLATE,
         title="<b>Inside the belt, yields span an order of magnitude</b>"
@@ -525,22 +674,37 @@ def fig_volume_quality_price(fao: pd.DataFrame, cqi: pd.DataFrame, reviews: pd.D
                     "n_reviews": True},
         log_x=True,
         size_max=45,
-        color_continuous_scale=SEQ,
+        color_continuous_scale=COFFEE_SCALE,
         labels={
             "avg_production_tonnes": "Avg annual production (tonnes, log)",
             "avg_cup_points": "Mean Q-grader cup points",
             "avg_price_100g": "Avg specialty price ($/100g)",
         },
     )
-    # Text labels for top countries.
-    for _, r in df.nlargest(8, "avg_production_tonnes").iterrows():
-        fig.add_annotation(x=np.log10(r["avg_production_tonnes"]) if False else r["avg_production_tonnes"],
-                           y=r["avg_cup_points"], text=r["country"],
-                           showarrow=False, yshift=14, font=dict(size=10))
+    # Curate labels: union of top producers (volume story) and top quality
+    # countries (cupping story), so both ends of the narrative are named.
+    top_vol = df.nlargest(8, "avg_production_tonnes")["country"]
+    top_qual = df.nlargest(6, "avg_cup_points")["country"]
+    label_set = set(top_vol) | set(top_qual) | {
+        "Brazil", "Vietnam", "Colombia", "Ethiopia", "Kenya", "Panama"
+    }
+    labeled = df[df["country"].isin(label_set)].copy()
+    fig.add_trace(go.Scatter(
+        x=labeled["avg_production_tonnes"],
+        y=labeled["avg_cup_points"],
+        mode="text",
+        text=labeled["country"],
+        textposition="top center",
+        textfont=dict(size=11, color="#222", family="Arial Black, Arial, sans-serif"),
+        hoverinfo="skip",
+        showlegend=False,
+        cliponaxis=False,
+    ))
     fig.update_layout(
         template=TEMPLATE,
         title="<b>Volume vs. quality: the specialty market lives in low-volume origins</b>"
               "<br><sup>Bubble size = avg specialty retail price (2017–2022)</sup>",
-        margin=dict(l=10, r=10, t=70, b=10),
+        margin=dict(l=10, r=10, t=70, b=40),
+        height=640,
     )
     return fig
