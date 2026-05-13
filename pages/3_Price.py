@@ -32,6 +32,12 @@ not measurable extra cup points.
 )
 
 st.plotly_chart(F.fig_price_rating(rev), width="stretch")
+st.caption(
+    "Note: the rating axis starts above zero. coffeereview.com only publishes "
+    "scores in the 84–98 band — every coffee here has already cleared a "
+    "specialty quality bar — so the full 0–100 range would be mostly empty "
+    "whitespace and would mask the price–rating curvature we care about."
+)
 
 # --- Quartile-bin summary ---------------------------------------------------
 df = rev.dropna(subset=["price_100g_usd", "rating"]).copy()

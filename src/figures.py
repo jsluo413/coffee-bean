@@ -542,6 +542,10 @@ def cluster_flavors(reviews: pd.DataFrame, n_clusters: int = 5):
 def fig_cluster_by_origin(df_clustered: pd.DataFrame, top_terms: dict) -> go.Figure:
     df = df_clustered.copy()
     top = df["origin_primary"].value_counts().head(10).index.tolist()
+    # Brazil sits at rank 12 in the specialty corpus, but the volume story
+    # makes it worth showing alongside the specialty-heavy origins.
+    if "Brazil" not in top:
+        top.append("Brazil")
     df = df[df["origin_primary"].isin(top)]
     pivot = (
         df.groupby(["origin_primary", "cluster"])
@@ -689,13 +693,14 @@ def fig_volume_quality_price(fao: pd.DataFrame, cqi: pd.DataFrame, reviews: pd.D
         "Brazil", "Vietnam", "Colombia", "Ethiopia", "Kenya", "Panama"
     }
     labeled = df[df["country"].isin(label_set)].copy()
+    # Bold via <b> renders consistently in any font; no Arial Black dependency.
     fig.add_trace(go.Scatter(
         x=labeled["avg_production_tonnes"],
         y=labeled["avg_cup_points"],
         mode="text",
-        text=labeled["country"],
+        text=["<b>" + c + "</b>" for c in labeled["country"]],
         textposition="top center",
-        textfont=dict(size=11, color="#222", family="Arial Black, Arial, sans-serif"),
+        textfont=dict(size=12, color="#1a1a1a"),
         hoverinfo="skip",
         showlegend=False,
         cliponaxis=False,
@@ -704,7 +709,9 @@ def fig_volume_quality_price(fao: pd.DataFrame, cqi: pd.DataFrame, reviews: pd.D
         template=TEMPLATE,
         title="<b>Volume vs. quality: the specialty market lives in low-volume origins</b>"
               "<br><sup>Bubble size = avg specialty retail price (2017–2022)</sup>",
-        margin=dict(l=10, r=10, t=70, b=40),
+        margin=dict(l=10, r=10, t=90, b=40),
         height=640,
+        font=dict(family="Inter, Helvetica, Arial, sans-serif"),
+        uniformtext=dict(mode="show", minsize=10),
     )
     return fig
