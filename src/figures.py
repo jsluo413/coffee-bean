@@ -693,18 +693,23 @@ def fig_volume_quality_price(fao: pd.DataFrame, cqi: pd.DataFrame, reviews: pd.D
         "Brazil", "Vietnam", "Colombia", "Ethiopia", "Kenya", "Panama"
     }
     labeled = df[df["country"].isin(label_set)].copy()
-    # Bold via <b> renders consistently in any font; no Arial Black dependency.
-    fig.add_trace(go.Scatter(
-        x=labeled["avg_production_tonnes"],
-        y=labeled["avg_cup_points"],
-        mode="text",
-        text=["<b>" + c + "</b>" for c in labeled["country"]],
-        textposition="top center",
-        textfont=dict(size=12, color="#1a1a1a"),
-        hoverinfo="skip",
-        showlegend=False,
-        cliponaxis=False,
-    ))
+    # Use annotations (not a text trace) so each label gets a white background
+    # pill — readable on top of any bubble color, and a leader arrow so the
+    # label clearly attaches to its point. Annotations don't depend on
+    # Arial Black, so the figure looks identical across systems.
+    for _, row in labeled.iterrows():
+        fig.add_annotation(
+            x=row["avg_production_tonnes"],
+            y=row["avg_cup_points"],
+            text=f"<b>{row['country']}</b>",
+            showarrow=True,
+            arrowhead=0, arrowsize=1, arrowwidth=1, arrowcolor="#555",
+            ax=0, ay=-22,
+            font=dict(size=12, color="#1a1a1a"),
+            bgcolor="rgba(255,255,255,0.85)",
+            bordercolor="rgba(0,0,0,0.25)", borderwidth=1, borderpad=2,
+            xref="x", yref="y",
+        )
     fig.update_layout(
         template=TEMPLATE,
         title="<b>Volume vs. quality: the specialty market lives in low-volume origins</b>"
@@ -712,6 +717,5 @@ def fig_volume_quality_price(fao: pd.DataFrame, cqi: pd.DataFrame, reviews: pd.D
         margin=dict(l=10, r=10, t=90, b=40),
         height=640,
         font=dict(family="Inter, Helvetica, Arial, sans-serif"),
-        uniformtext=dict(mode="show", minsize=10),
     )
     return fig
