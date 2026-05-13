@@ -685,31 +685,20 @@ def fig_volume_quality_price(fao: pd.DataFrame, cqi: pd.DataFrame, reviews: pd.D
             "avg_price_100g": "Avg specialty price ($/100g)",
         },
     )
-    # Curate labels: union of top producers (volume story) and top quality
-    # countries (cupping story), so both ends of the narrative are named.
-    top_vol = df.nlargest(8, "avg_production_tonnes")["country"]
-    top_qual = df.nlargest(6, "avg_cup_points")["country"]
-    label_set = set(top_vol) | set(top_qual) | {
-        "Brazil", "Vietnam", "Colombia", "Ethiopia", "Kenya", "Panama"
-    }
-    labeled = df[df["country"].isin(label_set)].copy()
-    # Use annotations (not a text trace) so each label gets a white background
-    # pill — readable on top of any bubble color, and a leader arrow so the
-    # label clearly attaches to its point. Annotations don't depend on
-    # Arial Black, so the figure looks identical across systems.
-    for _, row in labeled.iterrows():
-        fig.add_annotation(
-            x=row["avg_production_tonnes"],
-            y=row["avg_cup_points"],
-            text=f"<b>{row['country']}</b>",
-            showarrow=True,
-            arrowhead=0, arrowsize=1, arrowwidth=1, arrowcolor="#555",
-            ax=0, ay=-22,
-            font=dict(size=12, color="#1a1a1a"),
-            bgcolor="rgba(255,255,255,0.85)",
-            bordercolor="rgba(0,0,0,0.25)", borderwidth=1, borderpad=2,
-            xref="x", yref="y",
-        )
+    # Label every country. Lightweight text-only trace (no pills, no arrows)
+    # keeps the chart clean even with 30+ labels. Font family comes from the
+    # layout so labels don't depend on Arial Black being installed.
+    fig.add_trace(go.Scatter(
+        x=df["avg_production_tonnes"],
+        y=df["avg_cup_points"],
+        mode="text",
+        text=df["country"],
+        textposition="top center",
+        textfont=dict(size=10, color="#333"),
+        hoverinfo="skip",
+        showlegend=False,
+        cliponaxis=False,
+    ))
     fig.update_layout(
         template=TEMPLATE,
         title="<b>Volume vs. quality: the specialty market lives in low-volume origins</b>"
